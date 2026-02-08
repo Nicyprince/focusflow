@@ -139,7 +139,7 @@ And… obviously:
 
 <div align="center">
 
-**Made with ❤️ and Python and a lot of overthinking**
+**Made with ❤️, Python and a lot of overthinking**
 
 If you find FocusFlow helpful, please give it a ⭐!
 
