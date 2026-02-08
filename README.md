@@ -119,8 +119,8 @@ MIT License - feel free to use this project for personal or commercial purposes.
 ## 👨‍💻 Author
 
 **Your Name**
-- LinkedIn: [Your Profile](https://www.linkedin.com/in/nicy-prince12/)
-- GitHub: [@yourusername](https://github.com/Nicyprince)
+- LinkedIn: https://www.linkedin.com/in/nicy-prince12
+- GitHub: https://github.com/Nicyprince
 
 ## 🙏 Acknowledgments
 
@@ -129,11 +129,17 @@ Inspired by productivity methodologies:
 - Energy Management Principles
 - Eisenhower Matrix
 
+And… obviously:
+- Claude (for brainstorming and problem-solving)
+- ChatGPT (for explanations, debugging, and structuring ideas)
+- My mental health struggles, which made me care about building tools like this
+- My indecisiveness, which somehow still led to shipping this project
+
 ---
 
 <div align="center">
 
-**Made with ❤️ and Python**
+**Made with ❤️ and Python and a lot of overthinking**
 
 If you find FocusFlow helpful, please give it a ⭐!
 
