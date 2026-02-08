@@ -1,7 +1,6 @@
 import streamlit as st
 import random
 import json
-import os
 import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
@@ -83,30 +82,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------------
-# Constants
-# -------------------------
-TASK_FILE = "tasks.json"
-MOOD_FILE = "mood.json"
-STATS_FILE = "stats.json"
-
-# -------------------------
 # Helper Functions
 # -------------------------
-def load_data(file, default):
-    """Load JSON data from file"""
-    if os.path.exists(file):
-        try:
-            with open(file, "r") as f:
-                return json.load(f)
-        except:
-            return default
-    return default
-
-def save_data(file, data):
-    """Save data to JSON file"""
-    with open(file, "w") as f:
-        json.dump(data, f, indent=4)
-
 def priority_weight(priority):
     """Return numerical weight for priority"""
     return {"Low": 1, "Medium": 3, "High": 5}[priority]
@@ -118,24 +95,28 @@ def get_priority_color(priority):
 
 def complete_task(task_name):
     """Mark a task as completed and log stats"""
-    stats = load_data(STATS_FILE, {"completed": [], "total_time": 0})
-    stats["completed"].append({
+    if "stats" not in st.session_state:
+        st.session_state.stats = {"completed": [], "total_time": 0}
+    
+    st.session_state.stats["completed"].append({
         "name": task_name,
         "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
-    save_data(STATS_FILE, stats)
 
 # -------------------------
-# Initialize Session State
+# Initialize Session State (Browser-based storage)
 # -------------------------
 if "tasks" not in st.session_state:
-    st.session_state.tasks = load_data(TASK_FILE, [])
+    st.session_state.tasks = []
 
 if "moods" not in st.session_state:
-    st.session_state.moods = load_data(MOOD_FILE, [])
+    st.session_state.moods = []
 
 if "stats" not in st.session_state:
-    st.session_state.stats = load_data(STATS_FILE, {"completed": [], "total_time": 0})
+    st.session_state.stats = {"completed": [], "total_time": 0}
+
+if "initialized" not in st.session_state:
+    st.session_state.initialized = True
 
 # -------------------------
 # Sidebar
@@ -163,7 +144,51 @@ with st.sidebar:
     ]))
     
     st.markdown("---")
-    st.markdown("<small style='color: #64748b;'>Built with Streamlit & Python</small>", unsafe_allow_html=True)
+    
+    # Data Management
+    st.markdown("### Data")
+    
+    # Export data
+    if st.button("💾 Export Data"):
+        export_data = {
+            "tasks": st.session_state.tasks,
+            "moods": st.session_state.moods,
+            "stats": st.session_state.stats,
+            "exported_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+        }
+        st.download_button(
+            label="Download JSON",
+            data=json.dumps(export_data, indent=2),
+            file_name=f"focusflow_data_{datetime.now().strftime('%Y%m%d')}.json",
+            mime="application/json"
+        )
+    
+    # Import data
+    uploaded_file = st.file_uploader("📂 Import Data", type=['json'])
+    if uploaded_file is not None:
+        try:
+            imported_data = json.load(uploaded_file)
+            if st.button("Confirm Import"):
+                st.session_state.tasks = imported_data.get("tasks", [])
+                st.session_state.moods = imported_data.get("moods", [])
+                st.session_state.stats = imported_data.get("stats", {"completed": []})
+                st.success("Data imported successfully!")
+                st.rerun()
+        except Exception as e:
+            st.error("Invalid file format")
+    
+    # Clear all data
+    if st.button("🗑️ Clear All Data", type="secondary"):
+        if st.button("⚠️ Confirm Clear", type="primary"):
+            st.session_state.tasks = []
+            st.session_state.moods = []
+            st.session_state.stats = {"completed": []}
+            st.success("All data cleared!")
+            st.rerun()
+    
+    st.markdown("---")
+    st.markdown("<small style='color: #64748b;'>💡 Your data is stored in your browser only</small>", unsafe_allow_html=True)
+    st.markdown("<small style='color: #64748b;'>Built with Streamlit</small>", unsafe_allow_html=True)
 
 # -------------------------
 # Dashboard Page
@@ -294,7 +319,6 @@ elif page == "➕ Add Tasks":
                     "created": datetime.now().strftime("%Y-%m-%d %H:%M")
                 }
                 st.session_state.tasks.append(new_task)
-                save_data(TASK_FILE, st.session_state.tasks)
                 st.success("✅ Task added successfully!")
                 st.rerun()
             else:
@@ -346,14 +370,12 @@ elif page == "➕ Add Tasks":
                 if st.button("✓", key=f"complete_{i}", help="Mark as complete"):
                     complete_task(task['name'])
                     st.session_state.tasks.pop(i)
-                    save_data(TASK_FILE, st.session_state.tasks)
                     st.success("Task completed! 🎉")
                     st.rerun()
             
             with col3:
                 if st.button("🗑️", key=f"delete_{i}", help="Delete task"):
                     st.session_state.tasks.pop(i)
-                    save_data(TASK_FILE, st.session_state.tasks)
                     st.rerun()
     else:
         st.info("No tasks yet. Add your first task above!")
@@ -421,7 +443,6 @@ elif page == "🎯 Pick Task":
                     task_index = st.session_state.tasks.index(chosen)
                     complete_task(chosen['name'])
                     st.session_state.tasks.pop(task_index)
-                    save_data(TASK_FILE, st.session_state.tasks)
                     st.balloons()
                     st.success("Great job! Task completed! 🎉")
                     st.rerun()
@@ -488,7 +509,6 @@ elif page == "😊 Mood Tracker":
                 "note": note
             }
             st.session_state.moods.append(mood_entry)
-            save_data(MOOD_FILE, st.session_state.moods)
             st.success("✅ Mood logged successfully!")
             st.rerun()
     
