@@ -118,7 +118,7 @@ MIT License - feel free to use this project for personal or commercial purposes.
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Nicy Prince**
 - LinkedIn: https://www.linkedin.com/in/nicy-prince12
 - GitHub: https://github.com/Nicyprince
 
